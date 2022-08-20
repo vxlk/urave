@@ -51,15 +51,13 @@ void readSerialPort()
           SerialPort_Debug.println(buffer[positionOfHeartRate + offset]);
           
           SerialPort_Debug.println("All info:");
-          for (auto i = offset; i < 76 + offset; ++i) {
+          for (auto i = offset + 64; i < 76 + offset; ++i) {
             SerialPort_Debug.print(buffer[i]);
             SerialPort_Debug.print(" ");
           }
           SerialPort_Debug.println("");
           break;
         }
-  
-        SerialPort.flush();
       }
     }
   }

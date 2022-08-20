@@ -1,18 +1,21 @@
-#include <SoftwareSerial.h>
+#include <BluetoothSerial.h>
 
-SoftwareSerial Bluetooth(3,2); // TX && RX
+//https://randomnerdtutorials.com/esp32-bluetooth-classic-arduino-ide/
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
 
-//Listening to:
+
+BluetoothSerial btSerial;
 
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);
-  Bluetooth.begin(36400);
+  Serial.begin(115200); // this is most likely the wrong baud rate
+  btSerial.begin("U-Rave-Bluetooth");
 }
 
 void loop() {
-  if (Bluetooth.available()) {
-    Bluetooth.write(Serial.read());
+  if (btSerial.available()) {
+    btSerial.write(255);
   }
 }
