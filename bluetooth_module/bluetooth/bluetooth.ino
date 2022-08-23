@@ -15,7 +15,5 @@ void setup() {
 }
 
 void loop() {
-  if (btSerial.available()) {
     btSerial.write(255);
-  }
 }
