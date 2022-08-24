@@ -1,17 +1,8 @@
 #include "arduino-timer.h"
-
-#include <BluetoothSerial.h>
-
+#include "bio.h"
+#include "bluetooth.h"
+#include "temperature.h"
 #include <esp32-hal-ledc.h>
-
-//https://randomnerdtutorials.com/esp32-bluetooth-classic-arduino-ide/
-/*
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
-*/
-
-BluetoothSerial btSerial;
 
 int PWR_CTL = 2; // start at 0-no function
 int BLWR_PWM_L = 5; // start at 0
@@ -70,7 +61,7 @@ void setup() {
   // pinMode(BAT_CHK, OUTPUT);     
 
   const auto LOW_BATTERY_VALUE = 2; //todo: what is the real value here?
-  Timer < 1 > oneSecondTimerWithOneCallback;
+  Timer <1> oneSecondTimerWithOneCallback;
   const auto ONE_SECOND = 1000;
   oneSecondTimerWithOneCallback.every(ONE_SECOND, [](void * ) {
     const auto polledBatteryLevel = digitalRead(BAT_LVL);
@@ -80,8 +71,9 @@ void setup() {
     return true; // needed for the fn definition
   });
 
-  Serial.begin(115200); // this is most likely the wrong baud rate
-  btSerial.begin("U-Rave-Bluetooth");
+  bio::setup();
+  bluetooth::setup();
+  temperature::setup();
 }
 
 void loop() {
@@ -220,13 +212,15 @@ void loop() {
          *  BLWR_Duty- unsigned 8 bit, run speed selected by user for both blowers, 0 = OFF, 127 = 50%, 255 = 100% 
          *  
          */
-        if (btSerial.available()) {
-          //todo: real data
-          auto garb = 255;
-          btSerial.write(garb);
-        } else {
-          Serial.write("Wanted to write to bluetooth, but could not :(");
-        }
+        auto body_temp = temperature::getBodyTemperature();
+        auto heart_rate = bio::getHeartRateIfAvailable();
+        bluetooth::write<float>(body_temp);
+        bluetooth::write<uint8_t>(heart_rate);
+        // Need other bio data from the buffer here ...  
+        bluetooth::write<decltype(TIME_1)>(TIME_1);
+        bluetooth::write<decltype(TIME_2)>(TIME_1);
+        bluetooth::write<decltype(BAT_LVL)>(BAT_LVL);
+        bluetooth::write<decltype(BLWR_Duty)>(BLWR_Duty);
       }
     }
   }
