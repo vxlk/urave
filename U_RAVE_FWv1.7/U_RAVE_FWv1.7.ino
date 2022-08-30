@@ -162,10 +162,16 @@ void loop() {
         //digitalWrite(MOTOR_PIN, LOW);
         Serial.println("A short press is detected, Buzzer and light will flash 1-4 times, for 15-60 minutes ");
 
-      //todo: add code that will increment TIME_2 from 15 (flash and buzz once)  to 30 (flash and buzz twice) to 45 (flash and buzz thrice)to 60 (flash and buzz four times)then back to one until a long press is detected
+      //add code that will increment TIME_2 from 15 (flash and buzz once)  to 30 (flash and buzz twice) to 45 (flash and buzz thrice)to 60 (flash and buzz four times)then back to one until a long press is detected
       if (pressDuration > LONG_PRESS_TIME) // lock in TIME_2 variable and go to BLOWER FLOW
       {
         Serial.println("A long press is detected start BLOWER FLOW speed selection");
+        if (TIME_2 < 60) {
+          TIME_2 += 15;
+        }
+        else {
+          TIME_2 = 0;
+        }
         ledcWriteNote(TONE_PWM_CHANNEL, NOTE_C, 4);
         //digitalWrite(MOTOR_PIN, HIGH);
         delay(500);
@@ -196,6 +202,7 @@ void loop() {
      , stop bluetooth data when any exit criteria met   */
     long TIME_1 = releasedTime - pressedTime; //this should report the blower current blower run time in milliseconds while blower timer is running 
     while (TIME_1 < Blower_Run_Time_Stop && !batteryIsLow) {
+      // todo: press duration logic
       // export bluetooth
       if (EXT_DAT == 255) {
         /* data to be exported
@@ -212,6 +219,7 @@ void loop() {
          *  BLWR_Duty- unsigned 8 bit, run speed selected by user for both blowers, 0 = OFF, 127 = 50%, 255 = 100% 
          *  
          */
+        Serial.write("Writing to bluetooth\n");
         auto body_temp = temperature::getBodyTemperature();
         auto heart_rate = bio::getHeartRateIfAvailable();
         bluetooth::write<float>(body_temp);
